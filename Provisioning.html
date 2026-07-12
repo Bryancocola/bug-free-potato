@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Provisioning Your Workspace</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding-top: 15%; background-color: #f4f4f9; color: #333; }
+        #timer { font-size: 4rem; font-weight: bold; color: #0056b3; margin: 20px 0; }
+        button { display: none; padding: 10px 20px; font-size: 1.2rem; cursor: pointer; background: #0056b3; color: white; border: none; border-radius: 5px; margin: 0 auto; }
+    </style>
+</head>
+<body>
+    <h2>Welcome! Setting up your HPC & AWS Environment</h2>
+    <p>We are creating your accounts across the cluster. This takes about 45 seconds.</p>
+    
+    <div id="timer">45</div>
+    
+    <p id="message">Please wait. You will be redirected automatically...</p>
+    
+    <button id="retryBtn" onclick="window.location.href='/pun/sys/dashboard'">Click Here to Log In</button>
+
+    <script>
+        // Set the countdown time (in seconds) based on how long your bash script usually takes
+        let timeLeft = 45; 
+        const timerElement = document.getElementById('timer');
+        const messageElement = document.getElementById('message');
+        const btnElement = document.getElementById('retryBtn');
+
+        const countdown = setInterval(function() {
+            timeLeft--;
+            timerElement.textContent = timeLeft;
+
+            if (timeLeft <= 0) {
+                clearInterval(countdown);
+                timerElement.style.display = 'none';
+                messageElement.textContent = "Provisioning complete! Redirecting...";
+                btnElement.style.display = 'block'; // Show the button just in case
+                
+                // Automatically try to hit the dashboard again
+                window.location.href = '/pun/sys/dashboard';
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
