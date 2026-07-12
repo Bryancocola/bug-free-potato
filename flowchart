@@ -1,0 +1,33 @@
+[ User Browser ]
+       |
+       | Requests Dashboard / Accesses OOD URL
+       v
+[ Okta Identity Cloud ] (Handles SSO / MFA / Okta Verify)
+       |
+       |  Authenticates user & redirects back with Auth Code / ID Token
+       v
+[ Apache Front-End Proxy ] (Validates and passes in username')
+       |
+       | user_map_cmd
+       | Signals / Spawns PUN process via nginx_stage
+       v
+[ nginx_stage pun_pre_hook ] <-- EXECUTES HERE AS ROOT
+       |
+       +-----------------------+-------------------------+
+
+       | [ Exit Code: 0 ]      | [ Exit Code: 1 ]        | [ Exit Code: Custom / 2+ ]
+       | (Success)             | (Standard Failure)      | (Custom Action / Message)
+       v                       v                         v
+[ Per-User NGINX (PUN) ]   [ 5b. Default Block ]     [ 5c. Custom Intercept ]
+ (Runs natively as user)    - PUN launch aborts       - Aborts PUN launch
+       |                    - User sees generic       - Script passes a specific
+       |                       Apache error page         message or custom page 
+       |                                                 back to the browser UI
+       |                                                | 
+       |                                                v 
+       |                                              [ Per-User NGINX (PUN) ]
+       |                                                |
+       |                                                | 
+       +------------------------------------------------+
+[ 6. Proxies to Apps ] 
+Pre-PUN Exit Code Handling
