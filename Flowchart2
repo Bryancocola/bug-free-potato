@@ -1,0 +1,37 @@
+[ 🌐 User Browser ]
+       |
+       |  1. Requests Dashboard / Accesses OOD URL
+       |  (Or Auto-Redirects from Provisioning Page)
+       v
+[ 🛡️ Okta Identity Cloud ] (Handles SSO / MFA / Okta Verify)
+       |
+       |  2. Authenticates user & redirects back with Auth Code / ID Token
+       v
+[ 🚦 Apache Front-End Proxy ] <-----------------------------------+
+       |                                                          |
+       |  3. user_map_cmd                                         |
+       |  4. Signals / Spawns PUN process via nginx_stage         |
+       v                                                          |
+[ ⚙️ nginx_stage pun_pre_hook ] <--- [ EXECUTES HERE AS ROOT ]    |
+       |                                                          |
+       +-----------------------+-------------------------+        |
+       |                       |                         |        |
+ [ Exit Code: 0 ]        [ Exit Code: 1 ]        [ Exit Code: Custom / 2+ ]
+  (User Exists)         (Standard Failure)        (User Not Found)
+       |                       |                         |        |
+       |                       v                         v        |
+       |               [ ⛔ Default Block ]       [ ⏳ Custom Provisioning Page ]
+       |                - PUN launch aborts       - PUN launch aborts for now
+       |                - User is routed to       - Background provisioning starts
+       |                  generic error page      - User sees "Setting up account..."
+       |                                          - Page polls/waits for completion
+       |                                                 |
+       |                                                 | (Account Ready)
+       |                                                 | 5. Page Auto-Redirects
+       |                                                 +------>-------+
+       v
+[ 🟢 Per-User NGINX (PUN) ]
+ (Runs natively as user)
+       |
+       v
+[ 🚀 Proxies to Apps ]
